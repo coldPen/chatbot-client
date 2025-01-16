@@ -112,7 +112,7 @@ export default function Home({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder="Tapez votre message..."
-            className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
+            className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <div className="flex items-center p-3 pt-0">
             <Button type="submit" size="sm" className="ml-auto gap-1.5">
