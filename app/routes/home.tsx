@@ -9,8 +9,8 @@ import { Button } from "~/components/ui/button";
 import { CornerDownLeft } from "lucide-react";
 import { useFetcher } from "react-router";
 import { invariantResponse } from "@epic-web/invariant";
-import { StorageService } from "~/storage-service";
-import { ChatService } from "~/chat-service";
+import { StorageService } from "~/services/storage-service";
+import { ChatService } from "~/services/chat-service";
 import {
   useState,
   type ChangeEventHandler,

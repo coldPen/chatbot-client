@@ -1,6 +1,6 @@
 import type { Conversation, Message } from "~/domain/types";
-import { generateBotResponse } from "~/lib/chatbot-logic";
-import { StorageService } from "~/storage-service";
+import { generateBotResponse } from "~/services/generateBotResponse";
+import { StorageService } from "~/services/storage-service";
 
 export class ChatService {
   static async sendMessage(content: string): Promise<void> {
