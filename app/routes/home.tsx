@@ -2,17 +2,21 @@ import { ChatMessageList } from "~/components/ui/chat/chat-message-list";
 import type { Route } from "./+types/home";
 import {
   ChatBubble,
-  ChatBubbleAvatar,
   ChatBubbleMessage,
 } from "~/components/ui/chat/chat-bubble";
 import { ChatInput } from "~/components/ui/chat/chat-input";
 import { Button } from "~/components/ui/button";
-import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
-import { useFetcher, useSubmit } from "react-router";
+import { CornerDownLeft } from "lucide-react";
+import { useFetcher } from "react-router";
 import { invariantResponse } from "@epic-web/invariant";
 import { StorageService } from "~/storage-service";
 import { ChatService } from "~/chat-service";
-import { useState, type FormEventHandler } from "react";
+import {
+  useState,
+  type ChangeEventHandler,
+  type FormEventHandler,
+  type KeyboardEventHandler,
+} from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -33,6 +37,8 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   invariantResponse(typeof message === "string", "message must be a string");
 
+  if (message.trim() === "") return;
+
   await ChatService.sendMessage(message);
 }
 
@@ -41,16 +47,34 @@ export default function Home({
 }: Route.ComponentProps) {
   const fetcher = useFetcher();
 
-  const submit = useSubmit();
+  let optimisticMessagePreview = null;
+  if (fetcher.formData) {
+    const message = fetcher.formData.get("message");
+    if (typeof message === "string") {
+      optimisticMessagePreview = message;
+    }
+  }
 
-  const [messageContent, setMessage] = useState("");
+  const [messageContent, setMessageContent] = useState("");
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
+  const handleChange: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
+    setMessageContent(e.currentTarget.value);
+  };
+
+  const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      setMessageContent("");
+      fetcher.submit(e.currentTarget.form);
+    }
+  };
+
+  const handleSubmit: FormEventHandler<HTMLFormElement> = () => {
+    setMessageContent("");
   };
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="grid grid-rows-[1fr_auto] h-screen">
       <div className="flex-1 w-full overflow-y-auto bg-muted/40">
         <ChatMessageList>
           {conversation.messages.map((message) => (
@@ -58,11 +82,22 @@ export default function Home({
               key={message.id}
               variant={message.sender === "user" ? "sent" : "received"}
             >
-              <ChatBubbleMessage isLoading={fetcher.state !== "idle"}>
-                {message.content}
-              </ChatBubbleMessage>
+              <ChatBubbleMessage>{message.content}</ChatBubbleMessage>
             </ChatBubble>
           ))}
+
+          {optimisticMessagePreview && (
+            <>
+              <ChatBubble variant="sent">
+                <ChatBubbleMessage>
+                  {optimisticMessagePreview}
+                </ChatBubbleMessage>
+              </ChatBubble>
+              <ChatBubble variant="received">
+                <ChatBubbleMessage isLoading={fetcher.state !== "idle"} />
+              </ChatBubble>
+            </>
+          )}
         </ChatMessageList>
       </div>
       <div className="px-4 pb-4 bg-muted/40">
@@ -74,21 +109,12 @@ export default function Home({
           <ChatInput
             name="message"
             value={messageContent}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
             placeholder="Tapez votre message..."
             className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
           />
           <div className="flex items-center p-3 pt-0">
-            {/* <Button variant="ghost" size="icon">
-              <Paperclip className="size-4" />
-              <span className="sr-only">Attach file</span>
-            </Button>
-
-            <Button variant="ghost" size="icon">
-              <Mic className="size-4" />
-              <span className="sr-only">Use Microphone</span>
-            </Button> */}
-
             <Button type="submit" size="sm" className="ml-auto gap-1.5">
               Envoyer
               <CornerDownLeft className="size-3.5" />
