@@ -35,6 +35,12 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   return { conversation };
 }
 
+/**
+ * Gère les actions côté client de la conversation.
+ * Deux types d'actions sont possibles :
+ * - send-message : Envoie un nouveau message dans la conversation
+ * - reset-chat : Réinitialise complètement la conversation
+ */
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData();
 
@@ -65,6 +71,11 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   }
 }
 
+/**
+ * Composant principal de chat qui gère l'interface de conversation.
+ * Utilise un système d'optimistic UI pour afficher les messages immédiatement
+ * avant la confirmation du serveur.
+ */
 export default function Chat({
   loaderData: { conversation },
 }: Route.ComponentProps) {
@@ -78,12 +89,15 @@ export default function Chat({
     }
   }
 
+  // État local pour le contenu du message en cours de saisie
   const [messageContent, setMessageContent] = useState("");
 
+  // Gère les changements dans le champ de saisie
   const handleChange: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
     setMessageContent(e.currentTarget.value);
   };
 
+  // Gère les touches spéciales (notamment Entrée pour envoyer)
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -92,10 +106,12 @@ export default function Chat({
     }
   };
 
+  // Vide le contenu du message lorsqu'il est envoyé
   const handleSubmit: FormEventHandler<HTMLFormElement> = () => {
     setMessageContent("");
   };
 
+  // Détermine si la conversation contient des messages (incluant les messages optimistes)
   const chatIsNotEmpty =
     conversation.messages.length > 0 || optimisticMessagePreview !== null;
 
@@ -149,6 +165,7 @@ export default function Chat({
           )}
         </ChatMessageList>
       </div>
+
       <div className="px-4 pb-4 bg-muted/40">
         <fetcher.Form
           method="post"
@@ -165,6 +182,7 @@ export default function Chat({
             placeholder="Tapez votre message..."
             className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
           />
+
           <div className="flex items-center p-3 pt-0">
             <Button type="submit" size="sm" className="ml-auto gap-1.5">
               Envoyer

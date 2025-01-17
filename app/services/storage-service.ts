@@ -2,9 +2,18 @@ import { conversationSchema } from "~/domain/schemas";
 import type { Conversation } from "~/domain/types";
 import { getErrorMessage } from "~/lib/utils";
 
+/**
+ * Service responsable de la persistance de la conversation dans le localStorage.
+ * Gère la sérialisation/désérialisation des données et la validation du schéma.
+ */
 export class StorageService {
   private static STORAGE_KEY = "digitalkin_chat_conversation";
 
+  /**
+   * Récupère la conversation stockée dans le localStorage.
+   * Si aucune donnée n'existe ou si les données sont invalides,
+   * retourne une nouvelle conversation vide.
+   */
   static getConversation(): Conversation {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
@@ -38,6 +47,10 @@ export class StorageService {
     }
   }
 
+  /**
+   * Sauvegarde la conversation dans le localStorage.
+   * Les dates sont converties en chaînes ISO pour le stockage.
+   */
   static saveConversation(conversation: Conversation): void {
     // Transformer les dates en strings pour le stockage
     const serializedConversation = {
