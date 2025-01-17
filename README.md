@@ -1,13 +1,14 @@
 # Fake Chatbot
 
-Une application de chat interactive construite avec React et TypeScript, utilisant React Router pour la gestion des routes et TailwindCSS pour le style.
+Une application de chat interactive construite avec React et TypeScript, utilisant React Router pour la gestion des routes et la gestion de l'état, ainsi que TailwindCSS pour le style.
 
 ## Description
 
-Cette application est un chatbot qui simule une conversation en utilisant une interface moderne et réactive. Elle offre les fonctionnalités suivantes :
+Cette application est un chatbot qui simule une conversation avec des mocks simplesn, à travers une interface standard. Elle offre les fonctionnalités suivantes :
 
 - 🤖 Simulateur de conversation basé sur des messages d'utilisateur et de bot
 - 💾 Persistance locale de la conversation
+- 👀 Scroll automatique vers le bas de la conversation
 - 🔄 Réinitialisation de la conversation
 
 ## Installation
