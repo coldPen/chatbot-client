@@ -1,100 +1,74 @@
-# Welcome to React Router!
+# Fake Chatbot
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Une application de chat interactive construite avec React et TypeScript, utilisant React Router pour la gestion des routes et TailwindCSS pour le style.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Description
 
-## Features
+Cette application est un chatbot qui simule une conversation en utilisant une interface moderne et réactive. Elle offre les fonctionnalités suivantes :
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- 🤖 Simulateur de conversation basé sur des messages d'utilisateur et de bot
+- 💾 Persistance locale de la conversation
+- 🔄 Réinitialisation de la conversation
 
-## Getting Started
+## Installation
 
-### Installation
+1. Clonez le dépôt :
 
-Install the dependencies:
+```bash
+git clone https://github.com/coldPen/digitalkin-frontend-test.git
+cd digitalkin-frontend-test
+```
+
+2. Installez les dépendances :
 
 ```bash
 npm install
 ```
 
-### Development
+## Développement
 
-Start the development server with HMR:
+Pour lancer le serveur de développement avec Hot Module Replacement (HMR) :
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+L'application sera disponible à l'adresse `http://localhost:5173`.
 
-## Building for Production
+## Production
 
-Create a production build:
+Pour créer une version de production :
 
 ```bash
 npm run build
 ```
 
-## Deployment
+## Technologies utilisées
 
-### Docker Deployment
+- React
+- TypeScript
+- React Router
+- Vite
+- TailwindCSS
+- shadcn/ui & shadcn-chat
+- Lucide Icons
 
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
+## Structure du projet
 
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+├── app/
+│   ├── routes/          # Routes de l'application
+│   ├── components/      # Composants réutilisables
+│   ├── lib/             # Utilitaires et fonctions helpers
+│   ├── domain/          # Modèles et types métier
+│   └── services/        # Services (stockage, chat)
+└── public/             # Assets statiques
 ```
 
-## Styling
+## Notes de développement
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+- L'application utilise le stockage local via `clientLoader` et `clientAction` pour persister les conversations. Elle simule ainsi l'interaction avec un backend alors qu'il s'agit d'une SPA.
+- Cette décision a pour bénéfice de réduire le besoin en gestion d'état dans les composants React.
+- Si le choix d'utilisation d'un backend est envisagé ultérieurement, il serait possible de le faire en réactivant le SSR et modifiant la couche de persistence en utilisant `loader`et `action`.
+- L'application est plus globalement modulaire, permettant par exemple d'envisager de remplacer le mock de chat par une communication avec un vraie API de chat IA. (`generateBotResponse` ne prend que le dernier message de l'utilisateur en compte cependant, alors qu'une API a besoin du contexte complet de la conversation.)
+- Les composants UI, issus de shadcn/ui et shadcn-chat choisis pour leur design, leur fonctionnalité et leur compatibilité avec TailwindCSS, sont construits de manière modulaire pour faciliter la réutilisation et l'extensibilité.
