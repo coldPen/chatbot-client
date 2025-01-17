@@ -23,7 +23,7 @@ export class StorageService {
         return { messages: [] };
       }
 
-      // Valider avec le schéma Zod
+      // Valider le JSON issu de localStorage avec le schéma Zod
       const result = conversationSchema.safeParse(rawData);
 
       if (!result.success) {
@@ -51,5 +51,9 @@ export class StorageService {
       this.STORAGE_KEY,
       JSON.stringify(serializedConversation)
     );
+  }
+
+  static resetConversation(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
   }
 }
