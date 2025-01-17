@@ -4,9 +4,9 @@ Une application de chat interactive construite avec React et TypeScript, utilisa
 
 ## Description
 
-Cette application est un chatbot qui simule une conversation avec des mocks simplesn, à travers une interface standard. Elle offre les fonctionnalités suivantes :
+Cette application est un chatbot qui simule une conversation avec des mocks simples, à travers une interface standard. Elle offre les fonctionnalités suivantes :
 
-- 🤖 Simulateur de conversation basé sur des messages d'utilisateur et de bot
+- 🤖 Simulateur de conversation basée sur des déclencheurs de mots-clés dans le message de l’utilisateur
 - 💾 Persistance locale de la conversation
 - 👀 Scroll automatique vers le bas de la conversation
 - 🔄 Réinitialisation de la conversation
@@ -48,6 +48,7 @@ npm run build
 
 - React
 - TypeScript
+- Zod
 - React Router
 - Vite
 - TailwindCSS
