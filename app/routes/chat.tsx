@@ -2,11 +2,14 @@ import { CornerDownLeft, Trash } from "lucide-react";
 import { useFetcher } from "react-router";
 import { invariantResponse } from "@epic-web/invariant";
 import {
+  useEffect,
   useState,
   type ChangeEventHandler,
   type FormEventHandler,
   type KeyboardEventHandler,
 } from "react";
+import { AnimatePresence } from "motion/react";
+import * as motion from "motion/react-client";
 
 import type { Route } from "./+types/chat";
 
@@ -21,18 +24,20 @@ import { Button } from "~/components/ui/button";
 import { StorageService } from "~/services/storage-service";
 import { ChatService } from "~/services/chat-service";
 import { cn } from "~/lib/utils";
+import type { Message } from "~/domain/types";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Fake Chatbot" },
     { name: "description", content: "Welcome to Fake Chatbot!" },
   ];
 }
 
-export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+export async function clientLoader() {
   const conversation = StorageService.getConversation();
-
-  return { conversation };
+  // on partage la factory function "createMessage" avec le composant pour faciliter l'optimistic rendering
+  const { createMessage } = ChatService;
+  return { conversation, createMessage };
 }
 
 /**
@@ -52,22 +57,57 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   );
 
   switch (actionType) {
-    case "send-message":
+    case "send-message": {
       const message = formData.get("message");
       invariantResponse(
         typeof message === "string",
         "message must be a string"
       );
+
       if (message.trim() === "") return;
-      await ChatService.sendMessage(message);
-      // Pas besoin de renvoyer un payload: la route est revalidée après l'action, donc la conversation est actualisée
+
+      const messageId = formData.get("messageId");
+      invariantResponse(
+        typeof messageId === "string",
+        "messageId must be a string"
+      );
+
+      const messageTimestamp = formData.get("messageTimestamp");
+      invariantResponse(
+        typeof messageTimestamp === "string",
+        "messageTimestamp must be a string"
+      );
+
+      const responseId = formData.get("responseId");
+      invariantResponse(
+        typeof responseId === "string",
+        "responseId must be a string"
+      );
+
+      await ChatService.sendMessage(
+        {
+          id: messageId,
+          content: message,
+          timestamp: new Date(messageTimestamp),
+          sender: "user",
+        },
+        responseId
+      );
+
       break;
-    case "reset-chat":
+    }
+
+    case "reset-chat": {
       StorageService.resetConversation();
       break;
-    default:
+    }
+
+    default: {
       // On peut "jeter" une réponse pour qu'elle soit affichée au client via ErrorBoundary
-      throw new Response("Invalid action type", { status: 400 });
+      throw new Response(`Invalid action type "${actionType}"`, {
+        status: 400,
+      });
+    }
   }
 }
 
@@ -77,43 +117,104 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
  * avant la confirmation du serveur.
  */
 export default function Chat({
-  loaderData: { conversation },
+  loaderData: { conversation, createMessage },
 }: Route.ComponentProps) {
   const fetcher = useFetcher();
 
-  let optimisticMessagePreview = null;
-  if (fetcher.formData) {
-    const message = fetcher.formData.get("message");
-    if (typeof message === "string") {
-      optimisticMessagePreview = message;
-    }
-  }
+  // console.log(
+  //   JSON.stringify(
+  //     {
+  //       formData: fetcher.formData
+  //         ? Array.from(fetcher.formData.entries()).map(
+  //             ([key, value]) => `${key}: ${value}`
+  //           )
+  //         : undefined,
+  //       state: fetcher.state,
+  //       data: fetcher.data,
+  //     },
+  //     null,
+  //     "\t"
+  //   )
+  // );
 
   // État local pour le contenu du message en cours de saisie
   const [messageContent, setMessageContent] = useState("");
+
+  // Messages locaux pour l'affichage optimiste (1 paire de messages "user" et "bot")
+  const [messagePreviews, setMessagePreviews] = useState<
+    [Message & { sender: "user" }, Message & { sender: "bot" }] | null
+  >(null);
+
+  const isSendingMessage =
+    fetcher.formData?.get("actionType") === "send-message" &&
+    fetcher.state === "submitting" &&
+    messagePreviews;
+
+  useEffect(() => {
+    if (!isSendingMessage) {
+      setMessagePreviews(null);
+    }
+  }, [isSendingMessage]);
 
   // Gère les changements dans le champ de saisie
   const handleChange: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
     setMessageContent(e.currentTarget.value);
   };
 
+  const validateAndSubmit = (form: HTMLFormElement) => {
+    const formData = new FormData(form);
+
+    const messageText = formData.get("message");
+    invariantResponse(
+      typeof messageText === "string",
+      "message must be a string"
+    );
+
+    const userMessage = createMessage(messageText, "user");
+    const botMessage = createMessage("", "bot");
+
+    setMessagePreviews([userMessage, botMessage]);
+
+    formData.set("messageId", userMessage.id);
+    formData.set("messageTimestamp", userMessage.timestamp.toISOString());
+    formData.set("responseId", botMessage.id);
+
+    fetcher.submit(formData, { method: "post" });
+
+    setMessageContent("");
+  };
+
   // Gère les touches spéciales (notamment Entrée pour envoyer)
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      setMessageContent("");
-      fetcher.submit(e.currentTarget.form);
+
+      const form = e.currentTarget.form;
+      if (!form) {
+        return;
+      }
+
+      validateAndSubmit(form);
     }
   };
 
-  // Vide le contenu du message lorsqu'il est envoyé
-  const handleSubmit: FormEventHandler<HTMLFormElement> = () => {
-    setMessageContent("");
+  // 1. Ajoute au formulaire les données nécessaires à la création du message
+  //    (le timestamp ne peut être généré que lors de l'envoi du message)
+  // 2. Vide le contenu du message lorsqu'il est envoyé
+  const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+
+    validateAndSubmit(form);
   };
 
+  const allMessages = isSendingMessage
+    ? [...conversation.messages, ...messagePreviews]
+    : conversation.messages;
+
   // Détermine si la conversation contient des messages (incluant les messages optimistes)
-  const chatIsNotEmpty =
-    conversation.messages.length > 0 || optimisticMessagePreview !== null;
+  const chatIsNotEmpty = allMessages.length > 0;
 
   return (
     <div
@@ -137,32 +238,27 @@ export default function Chat({
 
       <div className="flex-1 w-full overflow-y-auto bg-muted/40">
         <ChatMessageList>
-          {conversation.messages.map((message) => (
-            <ChatBubble
-              key={message.id}
-              variant={message.sender === "user" ? "sent" : "received"}
-            >
-              <ChatBubbleMessage className="flex flex-col gap-2">
-                <div>{message.content}</div>
-                <div className="text-xs text-muted-foreground">
-                  {message.timestamp.toLocaleString()}
-                </div>
-              </ChatBubbleMessage>
-            </ChatBubble>
-          ))}
-
-          {optimisticMessagePreview && (
-            <>
-              <ChatBubble variant="sent">
-                <ChatBubbleMessage>
-                  {optimisticMessagePreview}
-                </ChatBubbleMessage>
-              </ChatBubble>
-              <ChatBubble variant="received">
-                <ChatBubbleMessage isLoading={fetcher.state !== "idle"} />
-              </ChatBubble>
-            </>
-          )}
+          <AnimatePresence initial={false}>
+            {allMessages.map((message, index) => (
+              <MotionBubbleWrapper key={message.id} index={index}>
+                <ChatBubble
+                  variant={message.sender === "user" ? "sent" : "received"}
+                >
+                  <ChatBubbleMessage
+                    className="flex flex-col gap-2"
+                    isLoading={
+                      message.sender === "bot" && message.content === ""
+                    }
+                  >
+                    <div>{message.content}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {message.timestamp.toLocaleString()}
+                    </div>
+                  </ChatBubbleMessage>
+                </ChatBubble>
+              </MotionBubbleWrapper>
+            ))}
+          </AnimatePresence>
         </ChatMessageList>
       </div>
 
@@ -192,5 +288,34 @@ export default function Chat({
         </fetcher.Form>
       </div>
     </div>
+  );
+}
+
+function MotionBubbleWrapper({
+  children,
+  index,
+}: {
+  children: React.ReactNode;
+  index: number;
+}) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 1, y: 50, x: 0 }}
+      animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+      exit={{ opacity: 0, scale: 1, y: 1, x: 0 }}
+      transition={{
+        opacity: { duration: 0.1 },
+        layout: {
+          type: "spring",
+          bounce: 0.3,
+          duration: index * 0.05 + 0.2,
+        },
+      }}
+      style={{ originX: 0.5, originY: 0.5 }}
+      className="flex flex-col gap-2 p-4"
+    >
+      {children}
+    </motion.div>
   );
 }

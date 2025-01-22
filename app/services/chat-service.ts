@@ -8,6 +8,29 @@ import { StorageService } from "~/services/storage-service";
  */
 export class ChatService {
   /**
+   * Crée un nouveau message avec les informations fournies.
+   * @param content Le contenu du message.
+   * @param sender L'expéditeur du message ("user" ou "bot").
+   * @param options Options supplémentaires pour le message (id et timestamp).
+   * @returns Le message créé.
+   */
+  static createMessage<S extends Message["sender"]>(
+    content: string,
+    sender: S,
+    options?: {
+      id?: string;
+      timestamp?: Date;
+    }
+  ): Message & { sender: S } {
+    return {
+      id: options?.id ?? crypto.randomUUID(),
+      content,
+      sender,
+      timestamp: options?.timestamp ?? new Date(),
+    };
+  }
+
+  /**
    * Envoie un message utilisateur et génère une réponse du bot.
    * Le processus inclut :
    * 1. Création du message utilisateur
@@ -15,24 +38,30 @@ export class ChatService {
    * 3. Génération et ajout de la réponse du bot
    * 4. Sauvegarde de la conversation mise à jour
    */
-  static async sendMessage(content: string): Promise<void> {
+  static async sendMessage(
+    message: Message,
+    responseId?: string
+  ): Promise<void> {
     const conversation = StorageService.getConversation();
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      content,
-      sender: "user",
-      timestamp: new Date(),
-    };
+    const userMessage: Message = ChatService.createMessage(
+      message.content,
+      "user",
+      {
+        id: message.id,
+        timestamp: message.timestamp ? new Date(message.timestamp) : undefined,
+      }
+    );
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const botMessage: Message = {
-      id: crypto.randomUUID(),
-      content: generateBotResponse(content),
-      sender: "bot",
-      timestamp: new Date(),
-    };
+    const botMessage: Message = ChatService.createMessage(
+      generateBotResponse(message.content),
+      "bot",
+      {
+        id: responseId,
+      }
+    );
 
     const updatedConversation: Conversation = {
       messages: [...conversation.messages, userMessage, botMessage],
