@@ -2,7 +2,6 @@ import { CornerDownLeft, Trash } from "lucide-react";
 import { useFetcher } from "react-router";
 import { invariantResponse } from "@epic-web/invariant";
 import {
-  useEffect,
   useState,
   type ChangeEventHandler,
   type FormEventHandler,
@@ -24,7 +23,7 @@ import { Button } from "~/components/ui/button";
 import { StorageService } from "~/services/storage-service";
 import { ChatService } from "~/services/chat-service";
 import { cn } from "~/lib/utils";
-import type { Message } from "~/domain/types";
+import { useOptimisticUpdates } from "~/useOptimisticUpdates";
 
 export function meta() {
   return [
@@ -121,47 +120,21 @@ export default function Chat({
 }: Route.ComponentProps) {
   const fetcher = useFetcher();
 
-  // console.log(
-  //   JSON.stringify(
-  //     {
-  //       formData: fetcher.formData
-  //         ? Array.from(fetcher.formData.entries()).map(
-  //             ([key, value]) => `${key}: ${value}`
-  //           )
-  //         : undefined,
-  //       state: fetcher.state,
-  //       data: fetcher.data,
-  //     },
-  //     null,
-  //     "\t"
-  //   )
-  // );
+  const { allMessages, createOptimisticMessages } = useOptimisticUpdates({
+    formData: fetcher.formData,
+    conversation,
+    createMessage,
+  });
 
   // État local pour le contenu du message en cours de saisie
   const [messageContent, setMessageContent] = useState("");
-
-  // Messages locaux pour l'affichage optimiste (1 paire de messages "user" et "bot")
-  const [messagePreviews, setMessagePreviews] = useState<
-    [Message & { sender: "user" }, Message & { sender: "bot" }] | null
-  >(null);
-
-  const isSendingMessage =
-    fetcher.formData?.get("actionType") === "send-message" &&
-    fetcher.state === "submitting" &&
-    messagePreviews;
-
-  useEffect(() => {
-    if (!isSendingMessage) {
-      setMessagePreviews(null);
-    }
-  }, [isSendingMessage]);
 
   // Gère les changements dans le champ de saisie
   const handleChange: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
     setMessageContent(e.currentTarget.value);
   };
 
-  const validateAndSubmit = (form: HTMLFormElement) => {
+  const optimisticSubmit = (form: HTMLFormElement) => {
     const formData = new FormData(form);
 
     const messageText = formData.get("message");
@@ -170,13 +143,11 @@ export default function Chat({
       "message must be a string"
     );
 
-    const userMessage = createMessage(messageText, "user");
-    const botMessage = createMessage("", "bot");
-
-    setMessagePreviews([userMessage, botMessage]);
+    const [userMessage, botMessage] = createOptimisticMessages(messageText);
 
     formData.set("messageId", userMessage.id);
     formData.set("messageTimestamp", userMessage.timestamp.toISOString());
+
     formData.set("responseId", botMessage.id);
 
     fetcher.submit(formData, { method: "post" });
@@ -194,7 +165,7 @@ export default function Chat({
         return;
       }
 
-      validateAndSubmit(form);
+      optimisticSubmit(form);
     }
   };
 
@@ -206,12 +177,8 @@ export default function Chat({
 
     const form = e.currentTarget;
 
-    validateAndSubmit(form);
+    optimisticSubmit(form);
   };
-
-  const allMessages = isSendingMessage
-    ? [...conversation.messages, ...messagePreviews]
-    : conversation.messages;
 
   // Détermine si la conversation contient des messages (incluant les messages optimistes)
   const chatIsNotEmpty = allMessages.length > 0;
@@ -240,7 +207,7 @@ export default function Chat({
         <ChatMessageList>
           <AnimatePresence initial={false}>
             {allMessages.map((message, index) => (
-              <MotionBubbleWrapper key={message.id} index={index}>
+              <AnimatedChatBubbleWrapper key={message.id} index={index}>
                 <ChatBubble
                   variant={message.sender === "user" ? "sent" : "received"}
                 >
@@ -256,7 +223,7 @@ export default function Chat({
                     </div>
                   </ChatBubbleMessage>
                 </ChatBubble>
-              </MotionBubbleWrapper>
+              </AnimatedChatBubbleWrapper>
             ))}
           </AnimatePresence>
         </ChatMessageList>
@@ -291,7 +258,7 @@ export default function Chat({
   );
 }
 
-function MotionBubbleWrapper({
+function AnimatedChatBubbleWrapper({
   children,
   index,
 }: {
