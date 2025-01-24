@@ -9,6 +9,7 @@ import type { ChatService } from "~/services/chat-service";
  * avant que la réponse réelle ne soit générée, améliorant ainsi l'expérience utilisateur.
  *
  * @param {Object} params - Les paramètres du hook
+ * @param {FormData | undefined} params.formData - Les données du formulaire en cours de soumission
  * @param {Conversation} params.conversation - L'état actuel de la conversation
  * @param {typeof ChatService.createMessage} params.createMessage - Fonction pour créer un nouveau message
  *
@@ -17,9 +18,11 @@ import type { ChatService } from "~/services/chat-service";
  *   - createOptimisticMessages: Fonction pour créer une paire de messages optimistes (utilisateur + bot)
  */
 export function useOptimisticUpdates({
+  formData,
   conversation,
   createMessage,
 }: {
+  formData: FormData | undefined;
   conversation: Conversation;
   createMessage: typeof ChatService.createMessage;
 }) {
@@ -32,7 +35,7 @@ export function useOptimisticUpdates({
 
   // Détermine si un message est en cours d'envoi basé sur l'action du formulaire
   const isSendingMessage =
-    fetcher.formData?.get("actionType") === "send-message" && messagePreviews;
+    formData?.get("actionType") === "send-message" && messagePreviews;
 
   // Réinitialise les aperçus de messages une fois qu'ils ne sont plus nécessaires
   useEffect(() => {

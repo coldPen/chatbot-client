@@ -8,8 +8,6 @@ import {
 } from "react";
 import { AnimatePresence } from "motion/react";
 
-import type { Route } from "../+types/chat";
-
 import { ChatMessageList } from "~/components/ui/chat/chat-message-list";
 
 import { StorageService } from "~/services/storage-service";
@@ -21,6 +19,8 @@ import { ResetChatButton } from "./components/ResetChatButton";
 import { AnimatedChatBubbleWrapper } from "./components/AnimatedChatBubbleWrapper";
 import { MessageForm } from "./components/MessageForm";
 import { ChatMessageItem } from "./components/ChatMessageItem";
+
+import type { Route } from ".react-router/types/app/routes/chat/+types/chat";
 
 export function meta() {
   return [
