@@ -26,8 +26,6 @@ export function useOptimisticUpdates({
   conversation: Conversation;
   createMessage: typeof ChatService.createMessage;
 }) {
-  const fetcher = useFetcher();
-
   // État local pour stocker la paire de messages optimistes (message utilisateur + réponse bot temporaire)
   const [messagePreviews, setMessagePreviews] = useState<
     [Message & { sender: "user" }, Message & { sender: "bot" }] | null

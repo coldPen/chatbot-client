@@ -49,7 +49,7 @@ export class ChatService {
       "user",
       {
         id: message.id,
-        timestamp: message.timestamp ? new Date(message.timestamp) : undefined,
+        timestamp: new Date(message.timestamp),
       }
     );
 
