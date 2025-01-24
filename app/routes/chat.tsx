@@ -24,6 +24,7 @@ import { StorageService } from "~/services/storage-service";
 import { ChatService } from "~/services/chat-service";
 import { cn } from "~/lib/utils";
 import { useOptimisticUpdates } from "~/useOptimisticUpdates";
+import type { Message } from "~/domain/types";
 
 export function meta() {
   return [
@@ -190,39 +191,14 @@ export default function Chat({
         chatIsNotEmpty ? "grid-rows-[auto_1fr_auto]" : "grid-rows-[1fr_auto]"
       )}
     >
-      {chatIsNotEmpty && (
-        <fetcher.Form
-          method="post"
-          className="p-4 flex items-center justify-center shadow"
-        >
-          <input type="hidden" name="actionType" value="reset-chat" />
-
-          <Button type="submit" className=" shadow-lg" variant="outline">
-            <Trash /> Réinitialiser la conversation
-          </Button>
-        </fetcher.Form>
-      )}
+      {chatIsNotEmpty && <ResetChatButton />}
 
       <div className="flex-1 w-full overflow-y-auto bg-muted/40">
         <ChatMessageList>
           <AnimatePresence initial={false}>
             {allMessages.map((message, index) => (
               <AnimatedChatBubbleWrapper key={message.id} index={index}>
-                <ChatBubble
-                  variant={message.sender === "user" ? "sent" : "received"}
-                >
-                  <ChatBubbleMessage
-                    className="flex flex-col gap-2"
-                    isLoading={
-                      message.sender === "bot" && message.content === ""
-                    }
-                  >
-                    <div>{message.content}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {message.timestamp.toLocaleString()}
-                    </div>
-                  </ChatBubbleMessage>
-                </ChatBubble>
+                <ChatMessageItem message={message} />
               </AnimatedChatBubbleWrapper>
             ))}
           </AnimatePresence>
@@ -230,29 +206,12 @@ export default function Chat({
       </div>
 
       <div className="px-4 pb-4 bg-muted/40">
-        <fetcher.Form
-          method="post"
+        <MessageForm
+          messageContent={messageContent}
+          onMessageChange={handleChange}
+          onKeyDown={handleKeyDown}
           onSubmit={handleSubmit}
-          className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
-        >
-          <input type="hidden" name="actionType" value="send-message" />
-
-          <ChatInput
-            name="message"
-            value={messageContent}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Tapez votre message..."
-            className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-
-          <div className="flex items-center p-3 pt-0">
-            <Button type="submit" size="sm" className="ml-auto gap-1.5">
-              Envoyer
-              <CornerDownLeft className="size-3.5" />
-            </Button>
-          </div>
-        </fetcher.Form>
+        />
       </div>
     </div>
   );
@@ -284,5 +243,73 @@ function AnimatedChatBubbleWrapper({
     >
       {children}
     </motion.div>
+  );
+}
+
+function ResetChatButton() {
+  const fetcher = useFetcher();
+  return (
+    <fetcher.Form
+      method="post"
+      className="p-4 flex items-center justify-center shadow"
+    >
+      <input type="hidden" name="actionType" value="reset-chat" />
+
+      <Button type="submit" className=" shadow-lg" variant="outline">
+        <Trash /> Réinitialiser la conversation
+      </Button>
+    </fetcher.Form>
+  );
+}
+
+function ChatMessageItem({ message }: { message: Message }) {
+  return (
+    <ChatBubble variant={message.sender === "user" ? "sent" : "received"}>
+      <ChatBubbleMessage
+        className="flex flex-col gap-2"
+        isLoading={message.sender === "bot" && message.content === ""}
+      >
+        <div>{message.content}</div>
+        <div className="text-xs text-muted-foreground">
+          {message.timestamp.toLocaleString()}
+        </div>
+      </ChatBubbleMessage>
+    </ChatBubble>
+  );
+}
+
+function MessageForm({
+  messageContent,
+  onMessageChange,
+  onKeyDown,
+  onSubmit,
+}: {
+  messageContent: string;
+  onMessageChange: ChangeEventHandler<HTMLTextAreaElement>;
+  onKeyDown: KeyboardEventHandler<HTMLTextAreaElement>;
+  onSubmit: FormEventHandler<HTMLFormElement>;
+}) {
+  const fetcher = useFetcher();
+  return (
+    <fetcher.Form
+      method="post"
+      onSubmit={onSubmit}
+      className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
+    >
+      <input type="hidden" name="actionType" value="send-message" />
+      <ChatInput
+        name="message"
+        value={messageContent}
+        onChange={onMessageChange}
+        onKeyDown={onKeyDown}
+        placeholder="Tapez votre message..."
+        className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+      />
+      <div className="flex items-center p-3 pt-0">
+        <Button type="submit" size="sm" className="ml-auto gap-1.5">
+          Envoyer <CornerDownLeft className="size-3.5" />
+        </Button>
+      </div>
+    </fetcher.Form>
   );
 }
