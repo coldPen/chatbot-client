@@ -8,6 +8,13 @@ import { useFetcher } from "react-router";
 import { Button } from "~/components/ui/button";
 import { ChatInput } from "~/components/ui/chat/chat-input";
 
+/**
+ * Composant de formulaire pour la saisie et l'envoi de messages dans le chat.
+ *
+ * Caractéristiques :
+ * - Gestion des raccourcis clavier (ex: Entrée pour envoyer)
+ * - Bouton d'envoi avec icône
+ */
 export function MessageForm({
   messageContent,
   onMessageChange,
