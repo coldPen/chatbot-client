@@ -8,18 +8,19 @@ import {
 } from "react";
 import { AnimatePresence } from "motion/react";
 
-import type { Route } from "./+types/chat";
+import type { Route } from "../+types/chat";
 
 import { ChatMessageList } from "~/components/ui/chat/chat-message-list";
 
 import { StorageService } from "~/services/storage-service";
 import { ChatService } from "~/services/chat-service";
 import { cn } from "~/lib/utils";
-import { useOptimisticUpdates } from "~/useOptimisticUpdates";
-import { ResetChatButton } from "~/components/chat/ResetChatButton";
-import { AnimatedChatBubbleWrapper } from "~/components/chat/AnimatedChatBubbleWrapper";
-import { MessageForm } from "~/components/chat/MessageForm";
-import { ChatMessageItem } from "~/components/chat/ChatMessageItem";
+import { useOptimisticUpdates } from "~/routes/chat/hooks/useOptimisticUpdates";
+
+import { ResetChatButton } from "./components/ResetChatButton";
+import { AnimatedChatBubbleWrapper } from "./components/AnimatedChatBubbleWrapper";
+import { MessageForm } from "./components/MessageForm";
+import { ChatMessageItem } from "./components/ChatMessageItem";
 
 export function meta() {
   return [
