@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
-import { useFetcher } from "react-router";
 import type { Conversation, Message } from "~/domain/types";
 import type { ChatService } from "~/services/chat-service";
+
+type MessagePreviews = [
+  Message & { sender: "user" },
+  Message & { sender: "bot" }
+];
 
 /**
  * Hook personnalisé pour gérer les mises à jour optimistes dans l'interface de chat.
@@ -27,9 +31,8 @@ export function useOptimisticUpdates({
   createMessage: typeof ChatService.createMessage;
 }) {
   // État local pour stocker la paire de messages optimistes (message utilisateur + réponse bot temporaire)
-  const [messagePreviews, setMessagePreviews] = useState<
-    [Message & { sender: "user" }, Message & { sender: "bot" }] | null
-  >(null);
+  const [messagePreviews, setMessagePreviews] =
+    useState<MessagePreviews | null>(null);
 
   // Détermine si un message est en cours d'envoi basé sur l'action du formulaire
   const isSendingMessage =
@@ -48,12 +51,14 @@ export function useOptimisticUpdates({
    * @returns {[Message, Message]} Une paire de messages [userMessage, botMessage]
    */
   const createOptimisticMessages = (messageText: string) => {
-    const userMessage = createMessage(messageText, "user");
-    const botMessage = createMessage("", "bot");
+    const messages: MessagePreviews = [
+      createMessage(messageText, "user"),
+      createMessage("", "bot"),
+    ];
 
-    setMessagePreviews([userMessage, botMessage]);
+    setMessagePreviews(messages);
 
-    return [userMessage, botMessage];
+    return messages;
   };
 
   // Combine les messages existants avec les aperçus optimistes si nécessaire
