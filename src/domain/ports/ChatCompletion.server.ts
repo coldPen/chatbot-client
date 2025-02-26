@@ -3,6 +3,6 @@ import type { Conversation } from "~/domain/types";
 export interface ChatCompletion {
   generateResponse(
     conversation: Conversation,
-    userMessage: string
+    userMessage: string,
   ): Promise<string>;
 }

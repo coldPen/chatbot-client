@@ -1,12 +1,12 @@
+import { StorageService } from "~/application/storage-service.server";
 import type {
   BotMessage,
   Conversation,
   Message,
   UserMessage,
 } from "~/domain/types";
-import { createMessage } from "~/infrastructure/presentation/lib/createMessage";
-import { StorageService } from "~/application/storage-service.server";
 import { MistralAdapter } from "~/infrastructure/ai-completion/MistralAdapter.server";
+import { createMessage } from "~/infrastructure/presentation/lib/createMessage";
 
 /**
  * Service gérant la logique métier des conversations.
@@ -23,7 +23,7 @@ export class ChatService {
    */
   static async sendMessage(
     message: Message,
-    responseId?: string
+    responseId?: string,
   ): Promise<void> {
     const chatCompletion = new MistralAdapter();
 
@@ -37,7 +37,7 @@ export class ChatService {
     const botMessage: BotMessage = createMessage(
       await chatCompletion.generateResponse(conversation, message.content),
       "bot",
-      { id: responseId }
+      { id: responseId },
     );
 
     const updatedConversation: Conversation = {

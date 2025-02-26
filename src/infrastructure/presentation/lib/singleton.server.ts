@@ -11,7 +11,7 @@ export function singleton<Value>(name: string, value: () => Value): Value {
 
 export async function asyncSingleton<Value>(
   name: string,
-  value: () => Promise<Value>
+  value: () => Promise<Value>,
 ): Promise<Value> {
   const yolo = global as any;
   yolo.__singletons ??= {};

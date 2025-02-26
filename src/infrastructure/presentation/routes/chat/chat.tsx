@@ -1,24 +1,25 @@
-import { useFetcher } from "react-router";
 import { invariant, invariantResponse } from "@epic-web/invariant";
+import { AnimatePresence } from "motion/react";
 import {
-  useState,
   type ChangeEventHandler,
   type FormEventHandler,
   type KeyboardEventHandler,
+  useState,
 } from "react";
-import { AnimatePresence } from "motion/react";
+import { useFetcher } from "react-router";
 
-import { ResetChatButton } from "./components/ResetChatButton";
-import { AnimatedChatBubbleWrapper } from "./components/AnimatedChatBubbleWrapper";
-import { MessageForm } from "./components/MessageForm";
-import { ChatMessageItem } from "./components/ChatMessageItem";
-
-import { ChatMessageList } from "~/infrastructure/presentation/components/ui/chat/chat-message-list";
-import { useOptimisticUpdates } from "~/infrastructure/presentation/routes/chat/hooks/useOptimisticUpdates";
 import { ChatService } from "~/application/chat-service.server";
-import { cn } from "~/infrastructure/presentation/lib/utils";
-import type { Route } from ".react-router/types/src/infrastructure/presentation/routes/chat/+types/chat";
 import { StorageService } from "~/application/storage-service.server";
+import { ChatMessageList } from "~/infrastructure/presentation/components/ui/chat/chat-message-list";
+import { cn } from "~/infrastructure/presentation/lib/utils";
+import { useOptimisticUpdates } from "~/infrastructure/presentation/routes/chat/hooks/useOptimisticUpdates";
+
+import { AnimatedChatBubbleWrapper } from "./components/AnimatedChatBubbleWrapper";
+import { ChatMessageItem } from "./components/ChatMessageItem";
+import { MessageForm } from "./components/MessageForm";
+import { ResetChatButton } from "./components/ResetChatButton";
+
+import type { Route } from ".react-router/types/src/infrastructure/presentation/routes/chat/+types/chat";
 
 export function meta() {
   return [
@@ -45,7 +46,7 @@ export async function action({ request }: Route.ClientActionArgs) {
 
   invariantResponse(
     typeof actionType === "string",
-    "actionType must be a string"
+    "actionType must be a string",
   );
 
   switch (actionType) {
@@ -53,7 +54,7 @@ export async function action({ request }: Route.ClientActionArgs) {
       const message = formData.get("message");
       invariantResponse(
         typeof message === "string",
-        "message must be a string"
+        "message must be a string",
       );
 
       if (message.trim() === "") return;
@@ -61,19 +62,19 @@ export async function action({ request }: Route.ClientActionArgs) {
       const messageId = formData.get("messageId");
       invariantResponse(
         typeof messageId === "string",
-        "messageId must be a string"
+        "messageId must be a string",
       );
 
       const messageTimestamp = formData.get("messageTimestamp");
       invariantResponse(
         typeof messageTimestamp === "string",
-        "messageTimestamp must be a string"
+        "messageTimestamp must be a string",
       );
 
       const responseId = formData.get("responseId");
       invariantResponse(
         typeof responseId === "string",
-        "responseId must be a string"
+        "responseId must be a string",
       );
 
       await ChatService.sendMessage(
@@ -83,7 +84,7 @@ export async function action({ request }: Route.ClientActionArgs) {
           timestamp: new Date(messageTimestamp),
           sender: "user",
         },
-        responseId
+        responseId,
       );
 
       break;
@@ -176,7 +177,7 @@ export default function Chat({
     <div
       className={cn(
         "grid h-screen",
-        chatIsNotEmpty ? "grid-rows-[auto_1fr_auto]" : "grid-rows-[1fr_auto]"
+        chatIsNotEmpty ? "grid-rows-[auto_1fr_auto]" : "grid-rows-[1fr_auto]",
       )}
     >
       {chatIsNotEmpty && <ResetChatButton />}

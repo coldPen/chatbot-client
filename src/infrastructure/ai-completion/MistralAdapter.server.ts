@@ -1,5 +1,6 @@
 import { invariantResponse } from "@epic-web/invariant";
 import { Mistral } from "@mistralai/mistralai";
+
 import type { ChatCompletion } from "~/domain/ports/ChatCompletion.server";
 import type { Conversation } from "~/domain/types";
 
@@ -13,7 +14,7 @@ export class MistralAdapter implements ChatCompletion {
 
   async generateResponse(
     conversation: Conversation,
-    userMessage: string
+    userMessage: string,
   ): Promise<string> {
     const oldMessages = conversation.messages.map((message) => ({
       content: message.content,
@@ -33,14 +34,14 @@ export class MistralAdapter implements ChatCompletion {
 
     invariantResponse(
       chatResponse.choices !== undefined && chatResponse.choices.length > 0,
-      "No choices returned in chat response"
+      "No choices returned in chat response",
     );
 
     const result = chatResponse.choices[0].message.content;
 
     invariantResponse(
       typeof result === "string",
-      "API did not return a string"
+      "API did not return a string",
     );
 
     return result;

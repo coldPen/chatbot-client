@@ -5,6 +5,7 @@ import type {
   KeyboardEventHandler,
 } from "react";
 import { useFetcher } from "react-router";
+
 import { Button } from "~/infrastructure/presentation/components/ui/button";
 import { ChatInput } from "~/infrastructure/presentation/components/ui/chat/chat-input";
 

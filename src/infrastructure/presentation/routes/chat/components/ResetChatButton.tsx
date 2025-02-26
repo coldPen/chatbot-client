@@ -1,5 +1,6 @@
 import { Trash } from "lucide-react";
 import { useFetcher } from "react-router";
+
 import { Button } from "~/infrastructure/presentation/components/ui/button";
 
 export function ResetChatButton() {

@@ -64,7 +64,7 @@ export class NodePersistAdapter implements ChatPersistence {
 
     await storage.setItem(
       this.STORAGE_KEY,
-      JSON.stringify(serializedConversation)
+      JSON.stringify(serializedConversation),
     );
   }
 

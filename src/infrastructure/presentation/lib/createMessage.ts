@@ -13,7 +13,7 @@ export function createMessage<S extends Message["sender"]>(
   options?: {
     id?: string;
     timestamp?: Date;
-  }
+  },
 ): Message & { sender: S } {
   return {
     id: options?.id ?? crypto.randomUUID(),

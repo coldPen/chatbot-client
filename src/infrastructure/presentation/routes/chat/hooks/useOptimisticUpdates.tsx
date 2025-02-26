@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+
 import type { Conversation, Message } from "~/domain/types";
 import { createMessage } from "~/infrastructure/presentation/lib/createMessage";
 
 type MessagePreviews = [
   Message & { sender: "user" },
-  Message & { sender: "bot" }
+  Message & { sender: "bot" },
 ];
 
 /**
