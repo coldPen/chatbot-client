@@ -3,6 +3,7 @@ import * as React from "react";
 import { Textarea } from "~/infrastructure/presentation/components/ui/textarea";
 import { cn } from "~/infrastructure/presentation/lib/utils";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ChatInputProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 

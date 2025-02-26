@@ -5,7 +5,7 @@ import type {
   Message,
   UserMessage,
 } from "~/domain/types";
-import { MistralAdapter } from "~/infrastructure/ai-completion/MistralAdapter.server";
+import { MistralAdapter } from "~/infrastructure/completion/MistralAdapter.server";
 import { createMessage } from "~/infrastructure/presentation/lib/createMessage";
 
 /**
