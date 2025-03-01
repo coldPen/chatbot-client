@@ -1,4 +1,5 @@
 import { StorageService } from "~/application/storage-service.server";
+import { createMessage } from "~/domain/factories/createMessage";
 import type {
   BotMessage,
   Conversation,
@@ -6,7 +7,6 @@ import type {
   UserMessage,
 } from "~/domain/types";
 import { MistralAdapter } from "~/infrastructure/completion/MistralAdapter.server";
-import { createMessage } from "~/infrastructure/presentation/lib/createMessage";
 
 /**
  * Service gérant la logique métier des conversations.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { createMessage } from "~/domain/factories/createMessage";
 import type { Conversation, Message } from "~/domain/types";
-import { createMessage } from "~/infrastructure/presentation/lib/createMessage";
 
 type MessagePreviews = [
   Message & { sender: "user" },
