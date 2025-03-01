@@ -1,11 +1,9 @@
 import type { ChatPersistence } from "~/domain/ports/ChatPersistence.server";
 import { conversationSchema } from "~/domain/schemas";
 import type { Conversation } from "~/domain/types";
-import { MistralAdapter } from "~/infrastructure/completion/MistralAdapter.server";
 import { getErrorMessage } from "~/infrastructure/presentation/lib/getErrorMessage";
 import { storage } from "~/infrastructure/presentation/lib/nodePersistClient.server";
 
-new MistralAdapter();
 /**
  * Adapteur responsable de la persistance de la conversation dans le storage node-persist côté serveur.
  * Gère la sérialisation/désérialisation des données et la validation du schéma.
