@@ -7,7 +7,8 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "check-boundaries": "good-fences src"
   },
   "dependencies": {
     "@epic-web/invariant": "^1.0.0",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@good-fences/api": "^0.19.1",
     "@react-router/dev": "^7.2.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^20",
