@@ -1,6 +1,7 @@
 import Markdown from "markdown-to-jsx";
 
 import type { Message } from "~/domain/types";
+
 import {
   ChatBubble,
   ChatBubbleMessage,

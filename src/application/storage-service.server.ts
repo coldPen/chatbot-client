@@ -1,19 +1,41 @@
+import type { ChatPersistence } from "~/domain/ports/ChatPersistence.server";
 import type { Conversation } from "~/domain/types";
-import { NodePersistAdapter } from "~/infrastructure/persistence/NodePersistAdapter.server";
 
 export class StorageService {
-  private static storage = new NodePersistAdapter();
+  private static persistence: ChatPersistence;
+
+  /**
+   * Initialize the storage service with a specific persistence implementation
+   */
+  static initialize(persistenceAdapter: ChatPersistence): void {
+    this.persistence = persistenceAdapter;
+  }
 
   static async getConversation(): Promise<Conversation> {
-    const conversation = await this.storage.getConversation();
+    if (!this.persistence) {
+      throw new Error(
+        "StorageService not initialized. Call initialize() first.",
+      );
+    }
+    const conversation = await this.persistence.getConversation();
     return conversation;
   }
 
   static async saveConversation(conversation: Conversation): Promise<void> {
-    await this.storage.saveConversation(conversation);
+    if (!this.persistence) {
+      throw new Error(
+        "StorageService not initialized. Call initialize() first.",
+      );
+    }
+    await this.persistence.saveConversation(conversation);
   }
 
   static async resetConversation(): Promise<void> {
-    await this.storage.resetConversation();
+    if (!this.persistence) {
+      throw new Error(
+        "StorageService not initialized. Call initialize() first.",
+      );
+    }
+    await this.persistence.resetConversation();
   }
 }

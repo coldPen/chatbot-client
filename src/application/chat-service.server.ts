@@ -1,12 +1,13 @@
-import { StorageService } from "~/application/storage-service.server";
 import { createMessage } from "~/domain/factories/createMessage";
+import type { ChatCompletion } from "~/domain/ports/ChatCompletion.server";
 import type {
   BotMessage,
   Conversation,
   Message,
   UserMessage,
 } from "~/domain/types";
-import { MistralAdapter } from "~/infrastructure/completion/MistralAdapter.server";
+
+import { StorageService } from "~/application/storage-service.server";
 
 /**
  * Service gérant la logique métier des conversations.
@@ -14,6 +15,15 @@ import { MistralAdapter } from "~/infrastructure/completion/MistralAdapter.serve
  */
 
 export class ChatService {
+  private static completion: ChatCompletion;
+
+  /**
+   * Initialize the chat service with a specific completion implementation
+   */
+  static initialize(completionAdapter: ChatCompletion): void {
+    this.completion = completionAdapter;
+  }
+
   /**
    * Envoie un message utilisateur et génère une réponse du bot.
    * Le processus inclut :
@@ -25,7 +35,9 @@ export class ChatService {
     message: Message,
     responseId?: string,
   ): Promise<void> {
-    const chatCompletion = new MistralAdapter();
+    if (!this.completion) {
+      throw new Error("ChatService not initialized. Call initialize() first.");
+    }
 
     const conversation = await StorageService.getConversation();
 
@@ -35,7 +47,7 @@ export class ChatService {
     });
 
     const botMessage: BotMessage = createMessage(
-      await chatCompletion.generateResponse(conversation, message.content),
+      await this.completion.generateResponse(conversation, message.content),
       "bot",
       { id: responseId },
     );
