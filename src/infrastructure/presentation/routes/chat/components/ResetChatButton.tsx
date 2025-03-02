@@ -8,7 +8,7 @@ export function ResetChatButton() {
   return (
     <fetcher.Form
       method="post"
-      className="p-4 flex items-center justify-center shadow"
+      className="p-4 flex items-center justify-center shadow-sm"
     >
       <input type="hidden" name="actionType" value="reset-chat" />
 
